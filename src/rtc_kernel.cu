@@ -128,13 +128,14 @@ CudaRtcKernel::CudaRtcKernel(const std::string& name, const std::string& kernel_
 
 	// Strangely, compute capabilities above 90 compile to slower MLP code, even on Blackwell GPUs.
 	// For now, until we figure out how to fix this, we therefore cap the compute capability at 90.
-	cc = min(cc, 90u);
+	//cc = min(cc, 90u);
+	auto min_cc = min(cc, 90u);
 
 	std::vector<std::string> opts = {
 		fmt::format("--gpu-architecture=compute_{}", cc),
 		fmt::format("-DTCNN_HALF_PRECISION={}", TCNN_HALF_PRECISION),
-		fmt::format("-DTCNN_MIN_GPU_ARCH={}", cc),
-		"--std=c++14",
+		fmt::format("-DTCNN_MIN_GPU_ARCH={}", min_cc),
+		"--std=c++17",	// bump c++ version to match my overall code
 #ifdef TCNN_RTC_USE_FAST_MATH
 		"--use_fast_math",
 #endif
@@ -290,8 +291,8 @@ CudaRtcKernel::CudaRtcKernel(const std::string& name, const std::string& kernel_
 		ptx.resize(ptx_size, '\0');
 		NVRTC_CHECK_THROW(nvrtcGetPTX(prog, ptx.data()));
 
-		std::string lowered_kernel_name_comment = fmt::format("//lowered_kernel_name={}\n", lowered_kernel_name);
-		ptx.insert(std::begin(ptx), std::begin(lowered_kernel_name_comment), std::end(lowered_kernel_name_comment));
+		//std::string lowered_kernel_name_comment = fmt::format("//lowered_kernel_name={}\n", lowered_kernel_name);
+		//ptx.insert(std::begin(ptx), std::begin(lowered_kernel_name_comment), std::end(lowered_kernel_name_comment));
 
 		NVRTC_CHECK_THROW(nvrtcDestroyProgram(&prog));
 
